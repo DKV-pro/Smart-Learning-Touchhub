@@ -13,7 +13,7 @@
     overflow: hidden;
     height: 100vh;
     display: flex;
-    flex-direction: row; /* ← pastikan horizontal */
+    flex-direction: row;
   }
 
   .side {
@@ -104,6 +104,12 @@
     color: yellow;
     text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
     pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .center-info.show {
+    opacity: 1;
   }
 </style>
 </head>
@@ -152,6 +158,12 @@
   const sRight = document.getElementById("score-right");
   const info = document.getElementById("center-info");
 
+  function showPopup(text) {
+    info.textContent = text;
+    info.classList.add("show");
+    setTimeout(() => info.classList.remove("show"), 1000);
+  }
+
   function showQuestion() {
     const q = questions[current];
     qLeft.textContent = q.q;
@@ -190,6 +202,7 @@
       btn.classList.add("correct");
       if (side === "left") scoreLeft++;
       else scoreRight++;
+      showPopup(side === "left" ? "🟢 Pemain 1 Benar!" : "🟢 Pemain 2 Benar!");
     } else {
       btn.classList.add("wrong");
     }
@@ -199,16 +212,15 @@
 
     if (!firstAnswered) {
       firstAnswered = side;
-      // Jika pemain pertama menjawab BENAR → langsung lanjut
+      // Jika pemain pertama menjawab benar → langsung lanjut
       if (index === q.answer) {
-        info.textContent = (side === "left" ? "🟢 Pemain 1 Benar!" : "🟢 Pemain 2 Benar!");
         waiting = true;
         setTimeout(nextQuestion, 1200);
         return;
       }
     }
 
-    // Jika kedua pemain sudah menjawab (apapun hasilnya)
+    // Jika kedua pemain sudah menjawab (benar/salah)
     if (answeredLeft && answeredRight) {
       waiting = true;
       setTimeout(nextQuestion, 1500);

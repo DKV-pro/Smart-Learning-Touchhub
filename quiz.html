@@ -3,154 +3,201 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz Interaktif - Smart Learning TouchHub</title>
+<title>Touch Battle Quiz - Dua Pemain</title>
 <style>
   body {
     margin: 0;
     font-family: "Segoe UI", sans-serif;
-    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    background: linear-gradient(135deg, #00b4db, #0083b0);
+    color: #fff;
     overflow: hidden;
-    user-select: none;
-    touch-action: manipulation;
+    height: 100vh;
+    display: flex;
   }
-  h2 { text-align: center; color: white; }
-  .quiz-container {
+
+  /* Layout dua sisi */
+  .side {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    height: 100vh;
+    align-items: center;
+    border-right: 4px solid rgba(255,255,255,0.2);
+    padding: 20px;
   }
-  .question-box {
-    background: white;
-    border-radius: 20px;
-    padding: 30px;
+  .side:last-child {
+    border-right: none;
+  }
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    width: 80%;
-    max-width: 800px;
   }
+
+  .question-box {
+    background: #ffffff;
+    color: #333;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    width: 80%;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+
   .answers {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 30px;
+    gap: 15px;
+    margin-top: 25px;
+    width: 80%;
   }
+
   .answers button {
-    font-size: 1.2rem;
-    padding: 20px;
-    background: #f8f8f8;
+    font-size: 1.3rem;
+    padding: 15px;
     border: none;
     border-radius: 15px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
-    cursor: pointer;
+    background: #f8f8f8;
+    color: #333;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     transition: 0.2s;
   }
-  .answers button:hover {
-    transform: scale(1.05);
-  }
-  .answers button.correct { background: #4CAF50; color: white; }
-  .answers button.wrong { background: #E74C3C; color: white; }
-  .score {
+  .answers button.correct {
+    background: #4CAF50;
     color: white;
+  }
+  .answers button.wrong {
+    background: #E74C3C;
+    color: white;
+  }
+
+  .score {
     margin-top: 20px;
     font-size: 1.5rem;
   }
+
   .back-btn {
     position: absolute;
-    top: 20px;
-    left: 20px;
-    padding: 15px 25px;
-    font-size: 1.2rem;
-    background: #fff;
-    border-radius: 10px;
+    top: 15px;
+    left: 15px;
+    padding: 12px 25px;
+    font-size: 1.1rem;
     border: none;
+    border-radius: 10px;
+    background: white;
+    color: #333;
+    font-weight: bold;
     cursor: pointer;
   }
-  .back-btn:hover { background: #ffe066; }
+
+  .next-btn {
+    margin-top: 20px;
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 10px;
+    background: #ffe066;
+    color: #333;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
 
-  <div class="quiz-container">
-    <button class="back-btn" onclick="window.location.href='index.html'">⬅️ Kembali</button>
-    <h2 id="question">Pertanyaan akan muncul di sini</h2>
-    <div class="question-box">
-      <div class="answers" id="answers"></div>
-    </div>
-    <div class="score" id="score">Skor: 0</div>
+  <button class="back-btn" onclick="window.location.href='index.html'">⬅️ Kembali</button>
+
+  <!-- Pemain Kiri -->
+  <div class="side" id="left-side">
+    <h2>👩 Pemain 1</h2>
+    <div class="question-box" id="question-left">Pertanyaan...</div>
+    <div class="answers" id="answers-left"></div>
+    <div class="score" id="score-left">Skor: 0</div>
+  </div>
+
+  <!-- Pemain Kanan -->
+  <div class="side" id="right-side">
+    <h2>👨 Pemain 2</h2>
+    <div class="question-box" id="question-right">Pertanyaan...</div>
+    <div class="answers" id="answers-right"></div>
+    <div class="score" id="score-right">Skor: 0</div>
   </div>
 
 <script>
-  // -------- DATA QUIZ --------
   const questions = [
-    {
-      q: "Apa nama ibu kota Indonesia?",
-      options: ["Jakarta", "Bandung", "Surabaya", "Yogyakarta"],
-      answer: 0
-    },
-    {
-      q: "Hasil dari 12 x 8 adalah ...",
-      options: ["88", "96", "108", "84"],
-      answer: 1
-    },
-    {
-      q: "Unsur kimia dengan simbol O adalah ...",
-      options: ["Osmium", "Oksigen", "Oganesson", "Olivin"],
-      answer: 1
-    },
-    {
-      q: "Planet terdekat dengan Matahari adalah ...",
-      options: ["Venus", "Merkurius", "Mars", "Bumi"],
-      answer: 1
-    }
+    { q: "Apa ibu kota Indonesia?", options: ["Bandung", "Jakarta", "Surabaya", "Semarang"], answer: 1 },
+    { q: "Planet terdekat dengan Matahari?", options: ["Venus", "Merkurius", "Mars", "Bumi"], answer: 1 },
+    { q: "Hasil dari 12 × 8 adalah ...", options: ["88", "96", "108", "84"], answer: 1 },
+    { q: "Simbol kimia air adalah ...", options: ["O2", "H2O", "CO2", "HO"], answer: 1 },
   ];
 
-  let currentQuestion = 0;
-  let score = 0;
+  let current = 0;
+  let scoreLeft = 0;
+  let scoreRight = 0;
+  let answered = false;
 
-  const questionEl = document.getElementById('question');
-  const answersEl = document.getElementById('answers');
-  const scoreEl = document.getElementById('score');
-
-  showQuestion();
+  const qLeft = document.getElementById("question-left");
+  const qRight = document.getElementById("question-right");
+  const aLeft = document.getElementById("answers-left");
+  const aRight = document.getElementById("answers-right");
+  const sLeft = document.getElementById("score-left");
+  const sRight = document.getElementById("score-right");
 
   function showQuestion() {
-    const q = questions[currentQuestion];
-    questionEl.textContent = q.q;
-    answersEl.innerHTML = "";
+    const q = questions[current];
+    qLeft.textContent = q.q;
+    qRight.textContent = q.q;
+    aLeft.innerHTML = "";
+    aRight.innerHTML = "";
+    answered = false;
 
     q.options.forEach((opt, i) => {
-      const btn = document.createElement('button');
-      btn.textContent = opt;
-      btn.onclick = () => checkAnswer(i, btn);
-      answersEl.appendChild(btn);
+      const btnL = document.createElement("button");
+      const btnR = document.createElement("button");
+      btnL.textContent = opt;
+      btnR.textContent = opt;
+
+      btnL.onclick = () => playerAnswer("left", i, btnL);
+      btnR.onclick = () => playerAnswer("right", i, btnR);
+
+      aLeft.appendChild(btnL);
+      aRight.appendChild(btnR);
     });
   }
 
-  function checkAnswer(i, btn) {
-    const q = questions[currentQuestion];
-    if (i === q.answer) {
-      btn.classList.add('correct');
-      score++;
+  function playerAnswer(side, index, btn) {
+    if (answered) return; // siapa cepat, dia duluan
+    const q = questions[current];
+    answered = true;
+
+    if (index === q.answer) {
+      btn.classList.add("correct");
+      if (side === "left") scoreLeft++;
+      else scoreRight++;
     } else {
-      btn.classList.add('wrong');
+      btn.classList.add("wrong");
     }
 
-    scoreEl.textContent = "Skor: " + score;
-    setTimeout(nextQuestion, 800);
+    sLeft.textContent = "Skor: " + scoreLeft;
+    sRight.textContent = "Skor: " + scoreRight;
+
+    setTimeout(nextQuestion, 1000);
   }
 
   function nextQuestion() {
-    currentQuestion++;
-    if (currentQuestion < questions.length) {
+    current++;
+    if (current < questions.length) {
       showQuestion();
     } else {
-      questionEl.textContent = "🎉 Selesai! Skor akhir: " + score + " / " + questions.length;
-      answersEl.innerHTML = "";
+      qLeft.textContent = "🎉 Selesai! Skor Akhir: " + scoreLeft;
+      qRight.textContent = "🎉 Selesai! Skor Akhir: " + scoreRight;
+      aLeft.innerHTML = "";
+      aRight.innerHTML = "";
     }
   }
-</script>
 
+  showQuestion();
+</script>
 </body>
 </html>

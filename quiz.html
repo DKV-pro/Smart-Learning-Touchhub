@@ -186,27 +186,39 @@
     if (side === "right" && answeredRight) return;
 
     const correct = (index === q.answer);
+
+    if (side === "left") answeredLeft = true;
+    else answeredRight = true;
+
     if (correct) {
       btn.classList.add("correct");
-      questionLocked = true;
       if (side === "left") scoreLeft++;
       else scoreRight++;
       updateScores();
+      questionLocked = true;
       status.textContent = `✅ ${side === "left" ? "Pemain 1" : "Pemain 2"} benar!`;
-      setTimeout(nextQuestion, 1000);
+      setTimeout(nextQuestion, 1200);
       return;
     } else {
       btn.classList.add("wrong");
-      if (side === "left") answeredLeft = true;
-      else answeredRight = true;
     }
 
-    // Jika dua-duanya sudah menjawab (meski salah)
-    if (answeredLeft && answeredRight) {
+    // Jika dua-duanya sudah menjawab (meski salah atau hanya satu benar tapi terlambat)
+    if (answeredLeft && answeredRight && !questionLocked) {
       questionLocked = true;
-      status.textContent = "⏩ Kedua pemain sudah menjawab!";
-      setTimeout(nextQuestion, 1000);
+      // Tandai jawaban benar di layar agar terlihat
+      highlightCorrectAnswer(q.answer);
+      status.textContent = "🔎 Keduanya sudah menjawab!";
+      setTimeout(nextQuestion, 2000);
     }
+  }
+
+  function highlightCorrectAnswer(correctIndex) {
+    // Warnai tombol benar di kedua sisi
+    const leftBtns = aLeft.querySelectorAll("button");
+    const rightBtns = aRight.querySelectorAll("button");
+    if (leftBtns[correctIndex]) leftBtns[correctIndex].classList.add("correct");
+    if (rightBtns[correctIndex]) rightBtns[correctIndex].classList.add("correct");
   }
 
   function nextQuestion() {

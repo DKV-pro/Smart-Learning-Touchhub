@@ -16,19 +16,28 @@
     align-items: center;
     justify-content: center;
     user-select: none;
+    text-align: center;
   }
-  h1, h2 { text-align: center; }
+
+  h1, h2 {
+    margin: 10px;
+  }
+
+  /* 4 tombol per baris, ukuran menyesuaikan layar */
   .menu-buttons {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
-    width: 80%;
+    width: 90%;
     max-width: 1000px;
     margin-top: 40px;
   }
+
   button {
-    font-size: 1.4rem;
-    padding: 20px;
+    width: 100%;
+    aspect-ratio: 1 / 0.6; /* menjaga proporsi tombol */
+    font-size: clamp(0.8rem, 1.5vw, 1.2rem);
+    padding: 10px;
     border: none;
     border-radius: 20px;
     background: white;
@@ -38,9 +47,20 @@
     cursor: pointer;
     transition: 0.2s;
   }
+
   button:hover {
     transform: scale(1.05);
     background: #ffe066;
+  }
+
+  /* agar layout tetap proporsional di layar kecil */
+  @media (max-width: 500px) {
+    .menu-buttons {
+      gap: 10px;
+    }
+    button {
+      border-radius: 15px;
+    }
   }
 </style>
 </head>
@@ -50,12 +70,13 @@
 
   <div class="menu-buttons">
     <button onclick="window.location.href='quiz.html'">🎯 Quiz Interaktif</button>
-    <button disabled>🧩 Puzzle Konsep (Coming Soon)</button>
-    <button disabled>🌍 Peta Interaktif (Coming Soon)</button>
-    <button disabled>🧠 Simulasi Virtual (Coming Soon)</button>
-    <button disabled>💬 Debat Digital (Coming Soon)</button>
-    <button disabled>🏗️ Bangun Kota (Coming Soon)</button>
-    <button disabled>🧮 Matematika Cepat (Coming Soon)</button>
+    <button disabled>🧩 Puzzle Konsep</button>
+    <button disabled>🌍 Peta Interaktif</button>
+    <button disabled>🧠 Simulasi Virtual</button>
+    <button disabled>💬 Debat Digital</button>
+    <button disabled>🏗️ Bangun Kota</button>
+    <button disabled>🧮 Matematika Cepat</button>
+    <button disabled>🔬 Eksperimen Sains</button>
   </div>
 </body>
 </html>

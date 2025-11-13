@@ -13,9 +13,9 @@
     overflow: hidden;
     height: 100vh;
     display: flex;
+    flex-direction: row; /* ← pastikan horizontal */
   }
 
-  /* Dua sisi layar */
   .side {
     flex: 1;
     display: flex;
@@ -64,6 +64,7 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     transition: 0.2s;
   }
+
   .answers button.correct {
     background: #4CAF50;
     color: white;
@@ -92,27 +93,24 @@
     cursor: pointer;
   }
 
-  .status {
+  .center-info {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(255,255,255,0.9);
-    color: #333;
-    padding: 10px 20px;
-    border-radius: 10px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
     font-weight: bold;
-  }
-
-  @media(max-width: 800px){
-    body { flex-direction: column; }
-    .side { border-right: none; border-bottom: 3px solid rgba(255,255,255,0.2); }
+    text-align: center;
+    color: yellow;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.6);
+    pointer-events: none;
   }
 </style>
 </head>
 <body>
 
   <button class="back-btn" onclick="window.location.href='index.html'">⬅️ Kembali</button>
-  <div class="status" id="status">Pertandingan Dimulai!</div>
+  <div class="center-info" id="center-info"></div>
 
   <!-- Pemain Kiri -->
   <div class="side" id="left-side">
@@ -143,7 +141,8 @@
   let scoreRight = 0;
   let answeredLeft = false;
   let answeredRight = false;
-  let questionLocked = false;
+  let firstAnswered = null;
+  let waiting = false;
 
   const qLeft = document.getElementById("question-left");
   const qRight = document.getElementById("question-right");
@@ -151,7 +150,7 @@
   const aRight = document.getElementById("answers-right");
   const sLeft = document.getElementById("score-left");
   const sRight = document.getElementById("score-right");
-  const status = document.getElementById("status");
+  const info = document.getElementById("center-info");
 
   function showQuestion() {
     const q = questions[current];
@@ -161,18 +160,17 @@
     aRight.innerHTML = "";
     answeredLeft = false;
     answeredRight = false;
-    questionLocked = false;
-    status.textContent = `Soal ${current + 1} dari ${questions.length}`;
+    firstAnswered = null;
+    waiting = false;
+    info.textContent = "";
 
     q.options.forEach((opt, i) => {
       const btnL = document.createElement("button");
       const btnR = document.createElement("button");
       btnL.textContent = opt;
       btnR.textContent = opt;
-
       btnL.onclick = () => playerAnswer("left", i, btnL);
       btnR.onclick = () => playerAnswer("right", i, btnR);
-
       aLeft.appendChild(btnL);
       aRight.appendChild(btnR);
     });
@@ -180,45 +178,41 @@
 
   function playerAnswer(side, index, btn) {
     const q = questions[current];
-    if (questionLocked) return;
+    if (waiting) return;
 
     if (side === "left" && answeredLeft) return;
     if (side === "right" && answeredRight) return;
 
-    const correct = (index === q.answer);
-
     if (side === "left") answeredLeft = true;
     else answeredRight = true;
 
-    if (correct) {
+    if (index === q.answer) {
       btn.classList.add("correct");
       if (side === "left") scoreLeft++;
       else scoreRight++;
-      updateScores();
-      questionLocked = true;
-      status.textContent = `✅ ${side === "left" ? "Pemain 1" : "Pemain 2"} benar!`;
-      setTimeout(nextQuestion, 1200);
-      return;
     } else {
       btn.classList.add("wrong");
     }
 
-    // Jika dua-duanya sudah menjawab (meski salah atau hanya satu benar tapi terlambat)
-    if (answeredLeft && answeredRight && !questionLocked) {
-      questionLocked = true;
-      // Tandai jawaban benar di layar agar terlihat
-      highlightCorrectAnswer(q.answer);
-      status.textContent = "🔎 Keduanya sudah menjawab!";
-      setTimeout(nextQuestion, 2000);
-    }
-  }
+    sLeft.textContent = "Skor: " + scoreLeft;
+    sRight.textContent = "Skor: " + scoreRight;
 
-  function highlightCorrectAnswer(correctIndex) {
-    // Warnai tombol benar di kedua sisi
-    const leftBtns = aLeft.querySelectorAll("button");
-    const rightBtns = aRight.querySelectorAll("button");
-    if (leftBtns[correctIndex]) leftBtns[correctIndex].classList.add("correct");
-    if (rightBtns[correctIndex]) rightBtns[correctIndex].classList.add("correct");
+    if (!firstAnswered) {
+      firstAnswered = side;
+      // Jika pemain pertama menjawab BENAR → langsung lanjut
+      if (index === q.answer) {
+        info.textContent = (side === "left" ? "🟢 Pemain 1 Benar!" : "🟢 Pemain 2 Benar!");
+        waiting = true;
+        setTimeout(nextQuestion, 1200);
+        return;
+      }
+    }
+
+    // Jika kedua pemain sudah menjawab (apapun hasilnya)
+    if (answeredLeft && answeredRight) {
+      waiting = true;
+      setTimeout(nextQuestion, 1500);
+    }
   }
 
   function nextQuestion() {
@@ -226,26 +220,12 @@
     if (current < questions.length) {
       showQuestion();
     } else {
-      endGame();
+      info.textContent = "🏁 Permainan Selesai!";
+      qLeft.textContent = "Skor Akhir: " + scoreLeft;
+      qRight.textContent = "Skor Akhir: " + scoreRight;
+      aLeft.innerHTML = "";
+      aRight.innerHTML = "";
     }
-  }
-
-  function updateScores() {
-    sLeft.textContent = "Skor: " + scoreLeft;
-    sRight.textContent = "Skor: " + scoreRight;
-  }
-
-  function endGame() {
-    qLeft.textContent = "🎉 Permainan Selesai!";
-    qRight.textContent = "🎉 Permainan Selesai!";
-    aLeft.innerHTML = "";
-    aRight.innerHTML = "";
-
-    let hasil;
-    if (scoreLeft > scoreRight) hasil = "🏆 Pemain 1 Menang!";
-    else if (scoreRight > scoreLeft) hasil = "🏆 Pemain 2 Menang!";
-    else hasil = "🤝 Seri!";
-    status.textContent = hasil;
   }
 
   showQuestion();

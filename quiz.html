@@ -15,7 +15,7 @@
     display: flex;
   }
 
-  /* Layout dua sisi */
+  /* Dua sisi layar */
   .side {
     flex: 1;
     display: flex;
@@ -92,21 +92,27 @@
     cursor: pointer;
   }
 
-  .next-btn {
-    margin-top: 20px;
-    padding: 15px 30px;
-    font-size: 1.2rem;
-    border: none;
-    border-radius: 10px;
-    background: #ffe066;
+  .status {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255,255,255,0.9);
     color: #333;
-    cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: bold;
+  }
+
+  @media(max-width: 800px){
+    body { flex-direction: column; }
+    .side { border-right: none; border-bottom: 3px solid rgba(255,255,255,0.2); }
   }
 </style>
 </head>
 <body>
 
   <button class="back-btn" onclick="window.location.href='index.html'">⬅️ Kembali</button>
+  <div class="status" id="status">Pertandingan Dimulai!</div>
 
   <!-- Pemain Kiri -->
   <div class="side" id="left-side">
@@ -135,7 +141,9 @@
   let current = 0;
   let scoreLeft = 0;
   let scoreRight = 0;
-  let answered = false;
+  let answeredLeft = false;
+  let answeredRight = false;
+  let questionLocked = false;
 
   const qLeft = document.getElementById("question-left");
   const qRight = document.getElementById("question-right");
@@ -143,6 +151,7 @@
   const aRight = document.getElementById("answers-right");
   const sLeft = document.getElementById("score-left");
   const sRight = document.getElementById("score-right");
+  const status = document.getElementById("status");
 
   function showQuestion() {
     const q = questions[current];
@@ -150,7 +159,10 @@
     qRight.textContent = q.q;
     aLeft.innerHTML = "";
     aRight.innerHTML = "";
-    answered = false;
+    answeredLeft = false;
+    answeredRight = false;
+    questionLocked = false;
+    status.textContent = `Soal ${current + 1} dari ${questions.length}`;
 
     q.options.forEach((opt, i) => {
       const btnL = document.createElement("button");
@@ -167,22 +179,34 @@
   }
 
   function playerAnswer(side, index, btn) {
-    if (answered) return; // siapa cepat, dia duluan
     const q = questions[current];
-    answered = true;
+    if (questionLocked) return;
 
-    if (index === q.answer) {
+    if (side === "left" && answeredLeft) return;
+    if (side === "right" && answeredRight) return;
+
+    const correct = (index === q.answer);
+    if (correct) {
       btn.classList.add("correct");
+      questionLocked = true;
       if (side === "left") scoreLeft++;
       else scoreRight++;
+      updateScores();
+      status.textContent = `✅ ${side === "left" ? "Pemain 1" : "Pemain 2"} benar!`;
+      setTimeout(nextQuestion, 1000);
+      return;
     } else {
       btn.classList.add("wrong");
+      if (side === "left") answeredLeft = true;
+      else answeredRight = true;
     }
 
-    sLeft.textContent = "Skor: " + scoreLeft;
-    sRight.textContent = "Skor: " + scoreRight;
-
-    setTimeout(nextQuestion, 1000);
+    // Jika dua-duanya sudah menjawab (meski salah)
+    if (answeredLeft && answeredRight) {
+      questionLocked = true;
+      status.textContent = "⏩ Kedua pemain sudah menjawab!";
+      setTimeout(nextQuestion, 1000);
+    }
   }
 
   function nextQuestion() {
@@ -190,11 +214,26 @@
     if (current < questions.length) {
       showQuestion();
     } else {
-      qLeft.textContent = "🎉 Selesai! Skor Akhir: " + scoreLeft;
-      qRight.textContent = "🎉 Selesai! Skor Akhir: " + scoreRight;
-      aLeft.innerHTML = "";
-      aRight.innerHTML = "";
+      endGame();
     }
+  }
+
+  function updateScores() {
+    sLeft.textContent = "Skor: " + scoreLeft;
+    sRight.textContent = "Skor: " + scoreRight;
+  }
+
+  function endGame() {
+    qLeft.textContent = "🎉 Permainan Selesai!";
+    qRight.textContent = "🎉 Permainan Selesai!";
+    aLeft.innerHTML = "";
+    aRight.innerHTML = "";
+
+    let hasil;
+    if (scoreLeft > scoreRight) hasil = "🏆 Pemain 1 Menang!";
+    else if (scoreRight > scoreLeft) hasil = "🏆 Pemain 2 Menang!";
+    else hasil = "🤝 Seri!";
+    status.textContent = hasil;
   }
 
   showQuestion();
